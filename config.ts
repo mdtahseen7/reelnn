@@ -15,20 +15,20 @@ export const NEXT_PUBLIC_WHATSAPP_CONTACT =
 export const NEXT_PUBLIC_INSTAGRAM_CONTACT =
   process.env.NEXT_PUBLIC_INSTAGRAM_CONTACT || "";
 
-export const SITE_SECRET = process.env.SITE_SECRET || "your_secret_key";
+export const SITE_SECRET = process.env.SITE_SECRET || "a9X7cB2LmQ8zF1dE";
 
 // Backend API
-export const BACKEND_URL = process.env.BACKEND_URL || "http://0.0.0.0:6519";
+export const BACKEND_URL = process.env.BACKEND_URL || "https://reelnn-backend-w9po.onrender.com/";
 
 
 // Telegram
 export const NEXT_PUBLIC_TELEGRAM_BOT_NAME =
-  process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME || "reelnnbot";
+  process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME || "Megumin07Bot";
 
 
 // Shortener API
-export const SHORTENER_API_URL = process.env.SHORTENER_API_URL || '';
-export const SHORTENER_API_KEY = process.env.SHORTENER_API_KEY || '';
+// export const SHORTENER_API_URL = process.env.SHORTENER_API_URL || '';
+// export const SHORTENER_API_KEY = process.env.SHORTENER_API_KEY || '';
 
 
 
