@@ -85,6 +85,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const [activeSettingsTab, setActiveSettingsTab] =
     useState<SettingTab>("Settings");
+  const [showNativeControls, setShowNativeControls] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const playerRef = useRef<HTMLDivElement>(null);
@@ -471,6 +472,7 @@ useEffect(() => {
           className={videoClasses}
           autoPlay
           crossOrigin="anonymous"
+          controls={showNativeControls}
           onClick={(e) => {
             if (
               settingsMenuRef.current &&
@@ -506,6 +508,16 @@ useEffect(() => {
           )}
           Your browser does not support the video tag.
         </video>
+
+        {/* Toggle native controls button for testing embedded subtitles */}
+        <div className="absolute top-4 right-4 z-50">
+          <button
+            onClick={() => setShowNativeControls((prev) => !prev)}
+            className="bg-gray-800 text-white px-3 py-1 rounded shadow hover:bg-gray-700"
+          >
+            {showNativeControls ? 'Hide Native Controls' : 'Show Native Controls'}
+          </button>
+        </div>
 
         {showSettingsMenu && (
           <motion.div
