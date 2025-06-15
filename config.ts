@@ -27,8 +27,8 @@ export const NEXT_PUBLIC_TELEGRAM_BOT_NAME =
 
 
 // Shortener API
-// export const SHORTENER_API_URL = process.env.SHORTENER_API_URL || '';
-// export const SHORTENER_API_KEY = process.env.SHORTENER_API_KEY || '';
+export const SHORTENER_API_URL = process.env.SHORTENER_API_URL || '';
+export const SHORTENER_API_KEY = process.env.SHORTENER_API_KEY || '';
 
 
 
