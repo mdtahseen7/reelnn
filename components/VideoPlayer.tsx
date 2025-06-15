@@ -31,7 +31,7 @@ const aspectRatioModes = [
   "fill",
   "ratio16_9",
   "ratio4_3",
-] as const; 
+] as const;
 type AspectRatioMode = (typeof aspectRatioModes)[number];
 
 const settingTabs = ["Speed", "Subtitles", "Settings"] as const;
@@ -76,21 +76,20 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     bufferProgress: 0,
   });
 
-  const updatePlayerState = useCallback((updates: Partial<typeof playerState>) => {
-    setPlayerState((prev) => ({ ...prev, ...updates }));
-  }, []);
-
-  const [aspectRatioMode, setAspectRatioMode] =
-    useState<AspectRatioMode>("bestFit");
+  const [showCaptions, setShowCaptions] = useState(false);
+  const [aspectRatioMode, setAspectRatioMode] = useState<AspectRatioMode>("bestFit");
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
-  const [activeSettingsTab, setActiveSettingsTab] =
-    useState<SettingTab>("Settings");
+  const [activeSettingsTab, setActiveSettingsTab] = useState<SettingTab>("Settings");
   const [showNativeControls, setShowNativeControls] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const playerRef = useRef<HTMLDivElement>(null);
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const settingsMenuRef = useRef<HTMLDivElement>(null);
+
+  const updatePlayerState = useCallback((updates: Partial<typeof playerState>) => {
+    setPlayerState((prev) => ({ ...prev, ...updates }));
+  }, []);
 
   useEffect(() => {
     const videoElement = videoRef.current;
@@ -112,72 +111,70 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, []);
 
-useEffect(() => {
-  const videoElement = videoRef.current;
-  if (!videoElement) return;
+  useEffect(() => {
+    const videoElement = videoRef.current;
+    if (!videoElement) return;
 
-  const handleTimeUpdate = () => {
-    updatePlayerState({
-      currentTime: videoElement.currentTime,
-      progress: (videoElement.currentTime / videoElement.duration) * 100,
-    });
-  };
+    const handleTimeUpdate = () => {
+      updatePlayerState({
+        currentTime: videoElement.currentTime,
+        progress: (videoElement.currentTime / videoElement.duration) * 100,
+      });
+    };
 
-  const handleLoadedMetadata = () => {
-    updatePlayerState({
-      duration: videoElement.duration,
-      volume: videoElement.volume,
-      playbackRate: videoElement.playbackRate,
-    });
-  };
+    const handleLoadedMetadata = () => {
+      updatePlayerState({
+        duration: videoElement.duration,
+        volume: videoElement.volume,
+        playbackRate: videoElement.playbackRate,
+      });
+    };
 
-  videoElement.addEventListener("timeupdate", handleTimeUpdate);
-  videoElement.addEventListener("loadedmetadata", handleLoadedMetadata);
+    videoElement.addEventListener("timeupdate", handleTimeUpdate);
+    videoElement.addEventListener("loadedmetadata", handleLoadedMetadata);
 
-  videoElement.volume = playerState.volume;
-  videoElement.playbackRate = playerState.playbackRate;
+    videoElement.volume = playerState.volume;
+    videoElement.playbackRate = playerState.playbackRate;
 
-  return () => {
-    videoElement.removeEventListener("timeupdate", handleTimeUpdate);
-    videoElement.removeEventListener("loadedmetadata", handleLoadedMetadata);
-  };
-}, [playerState.volume, playerState.playbackRate, updatePlayerState]);
-
+    return () => {
+      videoElement.removeEventListener("timeupdate", handleTimeUpdate);
+      videoElement.removeEventListener("loadedmetadata", handleLoadedMetadata);
+    };
+  }, [playerState.volume, playerState.playbackRate, updatePlayerState]);
 
   useEffect(() => {
-  const resetTimer = () => {
-    updatePlayerState({ showControls: true });
-    if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+    const resetTimer = () => {
+      updatePlayerState({ showControls: true });
+      if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
 
-    controlsTimeoutRef.current = setTimeout(() => {
-      updatePlayerState({ showControls: false });
-    }, 3000);
-  };
+      controlsTimeoutRef.current = setTimeout(() => {
+        updatePlayerState({ showControls: false });
+      }, 3000);
+    };
 
-  const handleInteraction = () => {
+    const handleInteraction = () => {
+      resetTimer();
+    };
+
     resetTimer();
-  };
 
-  resetTimer();
-
-  const playerElement = playerRef.current;
-  if (playerElement) {
-    playerElement.addEventListener("mousemove", handleInteraction);
-    playerElement.addEventListener("click", handleInteraction);
-  }
-
-  document.addEventListener("keydown", handleInteraction);
-
-  return () => {
+    const playerElement = playerRef.current;
     if (playerElement) {
-      playerElement.removeEventListener("mousemove", handleInteraction);
-      playerElement.removeEventListener("click", handleInteraction);
+      playerElement.addEventListener("mousemove", handleInteraction);
+      playerElement.addEventListener("click", handleInteraction);
     }
-    document.removeEventListener("keydown", handleInteraction);
-    if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
-  };
-}, [updatePlayerState]);
 
+    document.addEventListener("keydown", handleInteraction);
+
+    return () => {
+      if (playerElement) {
+        playerElement.removeEventListener("mousemove", handleInteraction);
+        playerElement.removeEventListener("click", handleInteraction);
+      }
+      document.removeEventListener("keydown", handleInteraction);
+      if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+    };
+  }, [updatePlayerState]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -201,64 +198,64 @@ useEffect(() => {
   }, [showSettingsMenu]);
 
   useEffect(() => {
-  const videoElement = videoRef.current;
-  if (!videoElement) return;
+    const videoElement = videoRef.current;
+    if (!videoElement) return;
 
-  const handleLoadingChange = () => {
-    updatePlayerState({ isLoading: videoElement.readyState < 3 });
-  };
+    const handleLoadingChange = () => {
+      updatePlayerState({ isLoading: videoElement.readyState < 3 });
+    };
 
-  const handleProgress = () => {
-    if (!videoElement.duration || !isFinite(videoElement.duration)) return;
+    const handleProgress = () => {
+      if (!videoElement.duration || !isFinite(videoElement.duration)) return;
 
-    const buffer = videoElement.buffered;
-    if (buffer.length > 0) {
-      const bufferedEnd = buffer.end(buffer.length - 1);
-      updatePlayerState({
-        bufferProgress: (bufferedEnd / videoElement.duration) * 100,
-      });
-    }
-  };
-  handleLoadingChange();
+      const buffer = videoElement.buffered;
+      if (buffer.length > 0) {
+        const bufferedEnd = buffer.end(buffer.length - 1);
+        updatePlayerState({
+          bufferProgress: (bufferedEnd / videoElement.duration) * 100,
+        });
+      }
+    };
+    handleLoadingChange();
 
-  videoElement.addEventListener("waiting", () =>
-    updatePlayerState({ isLoading: true })
-  );
-  videoElement.addEventListener("playing", () =>
-    updatePlayerState({ isLoading: false })
-  );
-  videoElement.addEventListener("canplay", handleLoadingChange);
-  videoElement.addEventListener("canplaythrough", handleLoadingChange);
-  videoElement.addEventListener("progress", handleProgress);
-
-  videoElement.addEventListener("stalled", () =>
-    updatePlayerState({ isLoading: true })
-  );
-
-  videoElement.addEventListener("seeking", () =>
-    updatePlayerState({ isLoading: true })
-  );
-  videoElement.addEventListener("seeked", handleLoadingChange);
-
-  return () => {
-    videoElement.removeEventListener("waiting", () =>
+    videoElement.addEventListener("waiting", () =>
       updatePlayerState({ isLoading: true })
     );
-    videoElement.removeEventListener("playing", () =>
+    videoElement.addEventListener("playing", () =>
       updatePlayerState({ isLoading: false })
     );
-    videoElement.removeEventListener("canplay", handleLoadingChange);
-    videoElement.removeEventListener("canplaythrough", handleLoadingChange);
-    videoElement.removeEventListener("progress", handleProgress);
-    videoElement.removeEventListener("stalled", () =>
+    videoElement.addEventListener("canplay", handleLoadingChange);
+    videoElement.addEventListener("canplaythrough", handleLoadingChange);
+    videoElement.addEventListener("progress", handleProgress);
+
+    videoElement.addEventListener("stalled", () =>
       updatePlayerState({ isLoading: true })
     );
-    videoElement.removeEventListener("seeking", () =>
+
+    videoElement.addEventListener("seeking", () =>
       updatePlayerState({ isLoading: true })
     );
-    videoElement.removeEventListener("seeked", handleLoadingChange);
-  };
-}, [updatePlayerState]);
+    videoElement.addEventListener("seeked", handleLoadingChange);
+
+    return () => {
+      videoElement.removeEventListener("waiting", () =>
+        updatePlayerState({ isLoading: true })
+      );
+      videoElement.removeEventListener("playing", () =>
+        updatePlayerState({ isLoading: false })
+      );
+      videoElement.removeEventListener("canplay", handleLoadingChange);
+      videoElement.removeEventListener("canplaythrough", handleLoadingChange);
+      videoElement.removeEventListener("progress", handleProgress);
+      videoElement.removeEventListener("stalled", () =>
+        updatePlayerState({ isLoading: true })
+      );
+      videoElement.removeEventListener("seeking", () =>
+        updatePlayerState({ isLoading: true })
+      );
+      videoElement.removeEventListener("seeked", handleLoadingChange);
+    };
+  }, [updatePlayerState]);
 
   useEffect(() => {
     if (videoRef.current) {
@@ -274,7 +271,6 @@ useEffect(() => {
     }
   }, [playerState.volume]);
 
-  // Player controls
   const togglePlay = () => {
     if (videoRef.current) {
       if (playerState.isPlaying) {
@@ -315,7 +311,6 @@ useEffect(() => {
     }
   };
 
-  // --- Volume Controls ---
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newVolume = parseFloat(e.target.value);
     updatePlayerState({ volume: newVolume });
@@ -351,7 +346,6 @@ useEffect(() => {
     return <RiVolumeUpLine size={24} />;
   };
 
-  // --- Playback Speed Controls ---
   const handleSpeedChange = (rate: number) => {
     if (videoRef.current) {
       videoRef.current.playbackRate = rate;
@@ -359,7 +353,17 @@ useEffect(() => {
       setShowSettingsMenu(false);
     }
   };
-  // --- End Playback Speed Controls ---
+
+  const toggleCaptions = useCallback(() => {
+    if (videoRef.current) {
+      const textTracks = videoRef.current.textTracks;
+      for (let i = 0; i < textTracks.length; i++) {
+        const track = textTracks[i];
+        track.mode = showCaptions ? "hidden" : "showing";
+      }
+      setShowCaptions(!showCaptions);
+    }
+  }, [showCaptions]);
 
   const videoClasses = useMemo(() => {
     const baseClasses = "mx-auto my-auto z-0";
@@ -398,13 +402,13 @@ useEffect(() => {
   };
 
   useEffect(() => {
-  const handleFullscreenChange = () => {
-    updatePlayerState({ isFullscreen: !!document.fullscreenElement });
-  };
-  document.addEventListener("fullscreenchange", handleFullscreenChange);
-  return () =>
-    document.removeEventListener("fullscreenchange", handleFullscreenChange);
-}, [updatePlayerState]);
+    const handleFullscreenChange = () => {
+      updatePlayerState({ isFullscreen: !!document.fullscreenElement });
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () =>
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, [updatePlayerState]);
 
   const formatTime = (seconds: number) => {
     if (isNaN(seconds) || !isFinite(seconds)) return "0:00";
@@ -441,7 +445,6 @@ useEffect(() => {
           <RiArrowLeftLine size={24} />
         </motion.button>
 
-        {/* Loading Overlay */}
         {showLoadingOverlay && (
           <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/50">
             {logoUrl ? (
@@ -459,7 +462,6 @@ useEffect(() => {
             ) : (
               <div className="text-white text-xl font-medium text-center bg-black/30 p-4 rounded-md">
                 <h3>{title || "Loading..."}</h3>
-
                 <div className="mt-2 text-sm">Buffering...</div>
               </div>
             )}
@@ -490,7 +492,6 @@ useEffect(() => {
 
             if (showSettingsMenu) {
               setShowSettingsMenu(false);
-
               return;
             }
             togglePlay();
@@ -509,7 +510,6 @@ useEffect(() => {
           Your browser does not support the video tag.
         </video>
 
-        {/* Toggle native controls button for testing embedded subtitles */}
         <div className="absolute top-4 right-4 z-50">
           <button
             onClick={() => setShowNativeControls((prev) => !prev)}
@@ -616,15 +616,19 @@ useEffect(() => {
                 </div>
               )}
               {activeSettingsTab === "Subtitles" && (
-                <div>
-                  <p className="text-green-300 text-sm">#TODO</p>
+                <div className="space-y-4">
+                  <button
+                    onClick={toggleCaptions}
+                    className="text-left text-sm px-3 py-1.5 rounded w-full transition-colors bg-red-600 text-white hover:bg-red-700"
+                  >
+                    {showCaptions ? "Hide Captions" : "Show Captions"}
+                  </button>
                 </div>
               )}
             </div>
           </motion.div>
         )}
 
-        {/* Video Controls Container */}
         <motion.div
           className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 z-20"
           initial={{ y: 20, opacity: 0 }}
@@ -634,18 +638,15 @@ useEffect(() => {
           }}
           transition={{ duration: 0.3 }}
         >
-          {/* Progress bar */}
           <div className="flex items-center mb-3">
             <span className="text-white text-xs mr-2 w-10 text-right">
               {formatTime(playerState.currentTime)}
             </span>
             <div className="relative w-full mx-2 group h-4 flex items-center">
-              {/* Buffer progress bar */}
               <div
                 className="absolute left-0 top-1/2 transform -translate-y-1/2 h-1 bg-gray-500 rounded-full w-full"
                 style={{ width: `${playerState.bufferProgress}%` }}
               />
-              {/* Seek bar */}
               <input
                 type="range"
                 min="0"
@@ -663,9 +664,7 @@ useEffect(() => {
             </span>
           </div>
 
-          {/* Control buttons */}
           <div className="flex items-center justify-between">
-            {/* Left Controls */}
             <div className="flex items-center space-x-2 sm:space-x-3">
               <button
                 onClick={togglePlay}
@@ -695,7 +694,6 @@ useEffect(() => {
                 <RiForward10Line size={28} />
               </button>
 
-              {/* Volume Control */}
               <div className="flex items-center group">
                 <button
                   onClick={toggleMute}
@@ -722,7 +720,6 @@ useEffect(() => {
               </h3>
             </div>
 
-            {/* Right Controls */}
             <div className="flex items-center space-x-2 sm:space-x-3">
               {quality && (
                 <div className="text-white text-xs bg-black/30 px-1.5 py-0.5 rounded hidden sm:block">
